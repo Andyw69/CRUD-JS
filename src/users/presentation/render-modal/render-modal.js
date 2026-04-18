@@ -29,7 +29,7 @@ const setFormValues = (user) => {
     form.querySelector('[name="firstName"]').value = user.firstName;
     form.querySelector('[name="lastName"]').value  = user.lastName;
     form.querySelector('[name="balance"]').value   = user.balance;
-    form.querySelector('[name="isActive"]').value  = user.isActive;
+    form.querySelector('[name="isActive"]').cheked = user.isActive;
     loadedUser = user;
 }
 
@@ -58,9 +58,16 @@ export const renderModal = (element, saveUserCallback) => {
         e.preventDefault();
 
         const formData = new FormData(form);
+        // El problema es que console.log({formData}) muestra el objeto FormData
+        // pero la consola del navegador no expande sus entradas directamente,
+        // ya que FormData no es un objeto plano, es iterable pero no enumerable.
+        // Para ver los datos debes convertirlo, por ejemplo:
+        // console.log(Object.fromEntries(formData));
+        // o iterar con: for(const [key, value] of formData) console.log(key, value);
+        // console.log(Object.fromEntries(formData));
         // const user = Object.fromEntries(formData);
-        // console.log(user);
-
+        
+        // console.log({userUpdate: user});
         const userLike = {...loadedUser};
         for(const [key, value] of formData){
             if(key === 'balance'){                
@@ -72,19 +79,17 @@ export const renderModal = (element, saveUserCallback) => {
                 userLike[key] = (value === 'on') ? true : false;
                 continue;
             }
-
+            
             userLike[key] = value;
         }
-        // console.log(userLike);
+        
+        
+        userLike.isActive = formData.get('isActive') === 'on'; 
+        // console.log('Este es el Userlike', userLike);
 
         // TODO: Guardar el usuario
         await saveUserCallback( userLike );
-        hideModal()
+        hideModal();
     });
-
-
     element.append( modal );
-
-
-
 }

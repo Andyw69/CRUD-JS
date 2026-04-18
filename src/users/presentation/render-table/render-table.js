@@ -1,6 +1,9 @@
 import usersStore from '../../store/users-store';
+import { deleteUser } from '../../use-cases/delete-user-by-id';
 import { showModal } from '../render-modal/render-modal';
 import './render-table.css';
+
+let table;
 
 const createTable = () => {
     
@@ -23,16 +26,44 @@ const createTable = () => {
 };
 
 
-let table;
-let loadedUser;
 
 
+/**
+ * 
+ * @param {MouseEvent} event 
+ * @returns 
+ */
 const tableSelectListener = (event) => {
     const element = event.target.closest('.select-user');
     if(!element) return;
 
     const id = element.getAttribute('data-id');
     showModal(id);
+};
+
+/**
+ * 
+ * @param {MouseEvent} event 
+ */
+const tableDeleteListener = async (event) => {
+
+    const element = event.target.closest('.delete-user');
+    if(!element) return;
+    const id = element.getAttribute('data-id');
+    try {
+        await deleteUser( id );
+        await usersStore.reloadPage();
+        
+        const spanPage = document.querySelector('#current-page');
+        if(spanPage) spanPage.innerText = usersStore.getCurrentPage();   
+        // console.log(spanPage?.innerText);
+        renderTable();
+        
+    } catch (error) {
+        console.log(error);
+        alert('Error, no se pudo eliminar')
+    }
+
 };
 /**
  * 
@@ -47,7 +78,8 @@ export const renderTable = ( element ) => {
         element.append( table );
 
         //TODO: listeners a la table
-        table.addEventListener('click', tableSelectListener )
+        table.addEventListener('click', tableSelectListener );
+        table.addEventListener('click', tableDeleteListener );
     }
     let tableHTML = '';
     users.forEach(user => {
